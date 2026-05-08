@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 from django.test import TestCase
 
-from apps.ai_services.services import compute_ats_score
+from apps.ai_services.services import compute_ats_score, generate_job_variants
 
 
 class ATSScoringServiceTests(TestCase):
@@ -23,3 +23,17 @@ class ATSScoringServiceTests(TestCase):
     def test_compute_ats_score_with_empty_job_keywords(self, _mock_extract_keywords):
         result = compute_ats_score("", "resume text")
         self.assertEqual(result, {"score": 0.0, "matched_keywords": [], "missing_keywords": []})
+
+    @patch("apps.ai_services.services.extract_keywords", return_value=["python", "react", "sql", "docker"])
+    def test_generate_job_variants_returns_multiple_full_drafts(self, _mock_extract_keywords):
+        jobs = generate_job_variants("Build a platform for managing internship hiring workflows.", count=3)
+
+        self.assertEqual(len(jobs), 3)
+        for job in jobs:
+            self.assertIn("title", job)
+            self.assertIn("project_overview", job)
+            self.assertIn("description", job)
+            self.assertIn("responsibilities", job)
+            self.assertIn("requirements", job)
+            self.assertIn("qualifications", job)
+            self.assertIn("skills", job)

@@ -80,7 +80,7 @@ API base URL: `http://127.0.0.1:8000`
 - `GET|POST /applications/`
 - `POST /ai/analyze-resume/`
 - `POST /ai/ats-score/`
-- `POST /ai/generate-job/`
+- `POST /ai/generate-job/` - returns multiple editable job drafts in `jobs[]`
 - `GET /ai/recommend-jobs/`
 - `POST /ai/micro-suggestions/`
 - `POST /ai/chat/`
@@ -120,8 +120,10 @@ Frontend now includes route protection by role using `/auth/me/` for:
    - Resume builder with live preview + PDF export
    - Candidate AI chat coach
 - Company dashboard:
-  - AI job generator
+   - AI job generator with multi-draft side panel
+   - Editable full job card before posting
    - Employer AI assistant
+   - My Jobs portal for posted roles
 - Admin dashboard:
   - Analytics snapshot cards and moderation panel shell
 

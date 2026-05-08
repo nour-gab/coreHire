@@ -21,6 +21,11 @@ urlpatterns = [
     path("jobs/", include("apps.jobs.urls")),
     path("applications/", include("apps.applications.urls")),
     path("ai/", include("apps.ai_services.urls")),
+    path("api/v1/health/", HealthCheckView.as_view(), name="api-v1-health"),
+    path("api/v1/auth/", include("apps.users.urls")),
+    path("api/v1/jobs/", include("apps.jobs.urls")),
+    path("api/v1/applications/", include("apps.applications.urls")),
+    path("api/v1/ai/", include("apps.ai_services.urls")),
 ]
 
 if settings.DEBUG:

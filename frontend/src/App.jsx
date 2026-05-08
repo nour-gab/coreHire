@@ -5,6 +5,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import DashboardLayout from "./layouts/DashboardLayout";
 import AdminDashboard from "./pages/AdminDashboard";
 import CandidateDashboard from "./pages/CandidateDashboard";
+import CompanyJobsPage from "./pages/CompanyJobsPage";
 import CompanyDashboard from "./pages/CompanyDashboard";
 import JobsPage from "./pages/JobsPage";
 import LandingPage from "./pages/LandingPage";
@@ -30,7 +31,7 @@ export default function App() {
         <Route element={<ProtectedRoute allowedRoles={["company"]} />}>
           <Route path="/dashboard/company" element={<DashboardLayout role="company" />}>
             <Route index element={<CompanyDashboard />} />
-            <Route path="jobs" element={<CompanyDashboard />} />
+            <Route path="jobs" element={<CompanyJobsPage />} />
           </Route>
         </Route>
 

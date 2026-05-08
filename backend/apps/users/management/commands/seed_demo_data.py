@@ -111,9 +111,11 @@ class Command(BaseCommand):
             company=company_a,
             title="Frontend Engineering Intern",
             defaults={
+                "project_overview": "Support a product squad building polished internship-level features for a customer-facing app.",
                 "description": "Build React UI features and integrate APIs for product workflows.",
                 "responsibilities": "Implement UI components, collaborate with designers, write tests.",
                 "requirements": "React JavaScript API integration communication",
+                "qualifications": "Studying computer science or a related field, portfolio of UI projects, collaborative mindset.",
                 "skills": ["react", "javascript", "api", "testing"],
                 "location": "Remote",
                 "is_active": True,
@@ -123,9 +125,11 @@ class Command(BaseCommand):
             company=company_b,
             title="Backend Engineering Intern",
             defaults={
+                "project_overview": "Help the platform team ship and document stable backend services for a live product.",
                 "description": "Develop Django APIs and optimize Postgres-backed services.",
                 "responsibilities": "Ship API endpoints, improve performance, document architecture.",
                 "requirements": "Python Django PostgreSQL Docker REST",
+                "qualifications": "Backend coursework or project experience, familiarity with APIs, ability to work iteratively.",
                 "skills": ["python", "django", "postgresql", "docker"],
                 "location": "Hybrid",
                 "is_active": True,

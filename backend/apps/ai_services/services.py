@@ -196,6 +196,8 @@ def generate_job_from_description(raw_description: str) -> dict[str, Any]:
 
     return {
         "title": f"{primary.title()} Intern",
+        "project_overview": "A short description of the team project and what success looks like.",
+        "description": raw_description.strip(),
         "responsibilities": [
             "Collaborate with cross-functional teams",
             "Build features and ship improvements",
@@ -206,8 +208,157 @@ def generate_job_from_description(raw_description: str) -> dict[str, Any]:
             "Basic understanding of core domain concepts",
             "Ability to learn quickly and work with feedback",
         ],
+        "qualifications": [
+            "Currently pursuing or recently completed a relevant degree",
+            "Portfolio or project experience that demonstrates practical skills",
+            "Comfort working in a fast-moving product environment",
+        ],
         "skills": keywords[:8],
     }
+
+
+def _fallback_job_variants(raw_description: str, count: int) -> list[dict[str, Any]]:
+    keywords = extract_keywords(raw_description, limit=18)
+    base_titles = [
+        "Product Engineering Intern",
+        "Frontend Engineering Intern",
+        "Backend Engineering Intern",
+        "Full-Stack Engineering Intern",
+        "AI Product Intern",
+        "Data & Automation Intern",
+    ]
+    role_focus = [
+        "ship customer-facing product improvements",
+        "build polished interface experiences",
+        "design stable services and APIs",
+        "connect front-end and back-end workflows",
+        "prototype AI-enabled product features",
+        "automate operational workflows and reporting",
+    ]
+    qualification_sets = [
+        [
+            "Strong communication and collaboration skills",
+            "Interest in shipping real product work",
+            "Ability to work from ambiguous requirements",
+        ],
+        [
+            "Experience with JavaScript and component-based UI development",
+            "Basic understanding of responsive design and accessibility",
+            "Comfort working with design systems and API integrations",
+        ],
+        [
+            "Experience with Python or similar backend stacks",
+            "Understanding of REST APIs and database concepts",
+            "Ability to debug and document service behavior",
+        ],
+        [
+            "Comfort moving across frontend and backend tasks",
+            "Interest in end-to-end product delivery",
+            "Ability to learn quickly and ship iteratively",
+        ],
+        [
+            "Familiarity with AI tools or prompt-based workflows",
+            "Curiosity about product experimentation and iteration",
+            "Evidence of building side projects or prototypes",
+        ],
+        [
+            "Interest in analytics, scripting, or internal tooling",
+            "Ability to structure data and automate repetitive work",
+            "Comfort explaining technical ideas clearly",
+        ],
+    ]
+
+    drafts: list[dict[str, Any]] = []
+    for index in range(count):
+        template_index = index % len(base_titles)
+        title = base_titles[template_index]
+        focus = role_focus[template_index]
+        qualification = qualification_sets[template_index]
+        skill_slice = keywords[index : index + 6] or keywords[:6]
+
+        drafts.append(
+            {
+                "title": title,
+                "project_overview": (
+                    f"Join the team to {focus} for the project described below. "
+                    "You will own a scoped internship project with clear deliverables."
+                ),
+                "description": raw_description.strip(),
+                "responsibilities": [
+                    f"{focus.capitalize()} and collaborate with the core team",
+                    "Translate product goals into shipped deliverables",
+                    "Track progress and document implementation decisions",
+                ],
+                "requirements": [
+                    "Ability to work from a clear project brief",
+                    "Comfort with version control, reviews, and iteration",
+                    "Willingness to learn and communicate blockers early",
+                ],
+                "qualifications": qualification,
+                "skills": skill_slice or keywords[:6],
+                "location": "Remote",
+            }
+        )
+
+    return drafts[: max(count, 1)]
+
+
+def generate_job_variants(raw_description: str, count: int = 3) -> list[dict[str, Any]]:
+    count = max(1, min(int(count or 3), 8))
+    keywords = extract_keywords(raw_description, limit=18)
+
+    prompt = (
+        "You are an expert hiring strategist. Generate STRICT JSON only. "
+        "Return an object with one key jobs whose value is an array of full job objects. "
+        "Each job object must contain title, project_overview, description, responsibilities, requirements, qualifications, skills, and location. "
+        f"Generate exactly {count} distinct job drafts for the same project. "
+        "Use concise but realistic internship-level language. "
+        "Responsibilities, requirements, and qualifications must each be arrays of exactly 3 strings. "
+        "Skills must be an array of 5 to 8 strings. "
+        "Do not include markdown. "
+        "\n\nPROJECT DESCRIPTION:\n"
+        f"{raw_description[:5000]}\n\n"
+        f"PROJECT KEYWORDS:\n{', '.join(keywords[:12])}\n"
+    )
+    hf_text = _call_hf_inference(
+        prompt=prompt,
+        model=HF_SUGGESTION_MODEL,
+        max_new_tokens=900,
+        temperature=0.35,
+    )
+    hf_payload = _extract_json_dict(hf_text or "")
+    jobs: list[dict[str, Any]] = []
+
+    if hf_payload:
+        candidate_jobs = hf_payload.get("jobs")
+        if isinstance(candidate_jobs, list):
+            for item in candidate_jobs[:count]:
+                if not isinstance(item, dict):
+                    continue
+                jobs.append(
+                    {
+                        "title": str(item.get("title", "")).strip() or "Generated Job",
+                        "project_overview": str(item.get("project_overview", "")).strip(),
+                        "description": str(item.get("description", raw_description)).strip(),
+                        "responsibilities": _coerce_list(item.get("responsibilities"), limit=3),
+                        "requirements": _coerce_list(item.get("requirements"), limit=3),
+                        "qualifications": _coerce_list(item.get("qualifications"), limit=3),
+                        "skills": _coerce_list(item.get("skills"), limit=8),
+                        "location": str(item.get("location", "Remote")).strip() or "Remote",
+                    }
+                )
+
+    if len(jobs) < count:
+        fallback_jobs = _fallback_job_variants(raw_description, count)
+        seen_titles = {job["title"] for job in jobs}
+        for fallback in fallback_jobs:
+            if len(jobs) >= count:
+                break
+            if fallback["title"] in seen_titles:
+                continue
+            jobs.append(fallback)
+
+    return jobs[:count]
 
 
 def resume_improvement_suggestions(resume_text: str, job_text: str = "") -> dict[str, Any]:

@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, re_path
 
 from .views import (
     ATSScoreView,
@@ -11,11 +11,11 @@ from .views import (
 )
 
 urlpatterns = [
-    path("analyze-resume/", AnalyzeResumeView.as_view(), name="analyze-resume"),
-    path("ats-score/", ATSScoreView.as_view(), name="ats-score"),
-    path("generate-job/", GenerateJobView.as_view(), name="generate-job"),
-    path("recommend-jobs/", RecommendJobsView.as_view(), name="recommend-jobs"),
-    path("micro-suggestions/", MicroSuggestionsView.as_view(), name="micro-suggestions"),
-    path("chat/", ChatbotView.as_view(), name="chat"),
-    path("import-profile-data/", ImportProfileDataView.as_view(), name="import-profile-data"),
+    re_path(r"^analyze-resume/?$", AnalyzeResumeView.as_view(), name="analyze-resume"),
+    re_path(r"^ats-score/?$", ATSScoreView.as_view(), name="ats-score"),
+    re_path(r"^generate-job/?$", GenerateJobView.as_view(), name="generate-job"),
+    re_path(r"^recommend-jobs/?$", RecommendJobsView.as_view(), name="recommend-jobs"),
+    re_path(r"^micro-suggestions/?$", MicroSuggestionsView.as_view(), name="micro-suggestions"),
+    re_path(r"^chat/?$", ChatbotView.as_view(), name="chat"),
+    re_path(r"^import-profile-data/?$", ImportProfileDataView.as_view(), name="import-profile-data"),
 ]

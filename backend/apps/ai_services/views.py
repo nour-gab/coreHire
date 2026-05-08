@@ -9,7 +9,7 @@ from apps.users.models import CandidateProfile
 from .services import (
     compute_ats_score,
     fetch_github_insights,
-    generate_job_from_description,
+    generate_job_variants,
     parse_linkedin_profile_simulation,
     parse_pdf_resume,
     resume_improvement_suggestions,
@@ -73,10 +73,11 @@ class GenerateJobView(APIView):
 
     def post(self, request):
         raw_description = request.data.get("description", "")
+        count = request.data.get("count", 3)
         if not raw_description:
             return Response({"detail": "description is required."}, status=status.HTTP_400_BAD_REQUEST)
-        generated = generate_job_from_description(raw_description)
-        return Response(generated)
+        generated_jobs = generate_job_variants(raw_description, count=count)
+        return Response({"jobs": generated_jobs})
 
 
 class RecommendJobsView(APIView):
